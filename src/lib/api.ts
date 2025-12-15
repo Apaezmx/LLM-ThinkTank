@@ -32,11 +32,11 @@ export const api = {
     if (!res.ok) throw new Error('Session not found');
     return res.json();
   },
-  createSession: async (name: string, mode: string, agentIds: number[]): Promise<{ id: number }> => {
+  createSession: async (name: string, mode: string, agentIds: number[], haltingPrompt: string): Promise<{ id: number }> => {
     const res = await fetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, mode, agentIds }),
+      body: JSON.stringify({ name, mode, agentIds, haltingPrompt }),
     });
     return res.json();
   },

@@ -49,8 +49,8 @@ async function startServer() {
 
   app.post("/api/sessions", (req, res) => {
     try {
-      const { name, mode, agentIds } = req.body;
-      const id = createSession(name, mode, agentIds);
+      const { name, mode, agentIds, haltingPrompt } = req.body;
+      const id = createSession(name, mode, agentIds, haltingPrompt);
       res.json({ id });
     } catch (error) {
       res.status(500).json({ error: error.message });

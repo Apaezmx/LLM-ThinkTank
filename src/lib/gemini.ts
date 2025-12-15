@@ -1,15 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { Agent, Message } from "../types";
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = (apiKey: string) => new GoogleGenAI({ apiKey });
 
 export async function generateAgentResponse(
   agent: Agent,
   history: Message[],
   allAgents: Agent[],
-  topic: string
+  topic: string,
+  apiKey: string
 ): Promise<string> {
-  const ai = getAI();
+  const ai = getAI(apiKey);
   
   const systemInstruction = `
     You are ${agent.name}.
@@ -53,5 +54,44 @@ export async function generateAgentResponse(
   } catch (error) {
     console.error("Error generating response:", error);
     return "I am having trouble thinking right now.";
+  }
+}
+
+export async function generateModeratorResponse(
+  history: Message[],
+  haltingPrompt: string,
+  apiKey: string
+): Promise<string> {
+  const ai = getAI(apiKey);
+  
+  const systemInstruction = `
+    You are a debate moderator. Your role is to determine if the debate should end based on a specific condition.
+    The condition is: "${haltingPrompt}".
+    Review the debate transcript. If the condition is met, respond with only the word "HALT".
+    Otherwise, respond with "CONTINUE: [brief reason for continuing]".
+  `;
+
+  const transcript = history.map(m => `${m.role}: ${m.content}`).join('\n');
+
+  const prompt = `
+    Debate Transcript:
+    ${transcript}
+    
+    Condition: "${haltingPrompt}"
+    Based on the transcript and the condition, should the debate end? If not, provide a very brief reason why.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        systemInstruction: systemInstruction,
+      }
+    });
+    return response.text?.trim() || "CONTINUE: No clear halting condition met yet.";
+  } catch (error) {
+    console.error("Error generating moderator response:", error);
+    return "CONTINUE: Moderator encountered an error.";
   }
 }

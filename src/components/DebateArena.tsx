@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Session, Agent, Message } from '../types';
 import { api } from '../lib/api';
-import { generateAgentResponse } from '../lib/gemini';
+import { generateAgentResponse, generateModeratorResponse } from '../lib/gemini';
 import ReactMarkdown from 'react-markdown';
 import { Play, Pause, SkipForward, Send, StopCircle } from 'lucide-react';
 import clsx from 'clsx';
@@ -9,9 +9,11 @@ import clsx from 'clsx';
 interface DebateArenaProps {
   session: Session;
   onUpdate: () => void;
+  apiKey: string;
+  haltingPrompt: string;
 }
 
-export const DebateArena: React.FC<DebateArenaProps> = ({ session, onUpdate }) => {
+export const DebateArena: React.FC<DebateArenaProps> = ({ session, onUpdate, apiKey, haltingPrompt }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [thinkingAgents, setThinkingAgents] = useState<Set<number>>(new Set());
   const [input, setInput] = useState('');
@@ -27,33 +29,45 @@ export const DebateArena: React.FC<DebateArenaProps> = ({ session, onUpdate }) =
 
   // Real-time loop
   useEffect(() => {
-    if (!isRunning || session.mode !== 'realtime') return;
+    if (!isRunning || session.mode !== 'realtime' || !apiKey) return;
 
-    const interval = setInterval(() => {
-      // Check if we should trigger an agent
-      // If no one is thinking and it's been a while, or just randomly
+    const interval = setInterval(async () => {
       if (thinkingAgents.size === 0) {
+        if (haltingPrompt) {
+          const moderatorResponse = await generateModeratorResponse(session.messages, haltingPrompt, apiKey);
+          if (moderatorResponse.includes('HALT')) {
+            await api.addMessage(session.id, null, 'moderator', `Moderator: The debate has been halted. Reason: ${haltingPrompt}`);
+            onUpdate();
+            setIsRunning(false);
+            return;
+          } else if (moderatorResponse.includes('CONTINUE')) {
+            await api.addMessage(session.id, null, 'moderator', `Moderator: ${moderatorResponse.replace('CONTINUE:', '').trim()}`);
+            onUpdate();
+          }
+        }
+
         // Pick a random agent that isn't the last speaker
         const lastMsg = session.messages[session.messages.length - 1];
         const candidates = session.agents.filter(a => a.id !== lastMsg?.agent_id);
         
         if (candidates.length > 0) {
           const nextAgent = candidates[Math.floor(Math.random() * candidates.length)];
-          triggerAgent(nextAgent);
+          // Add a small delay to allow the moderator's message to be rendered
+          setTimeout(() => triggerAgent(nextAgent), 500);
         }
       }
     }, 3000); // Check every 3 seconds
 
     return () => clearInterval(interval);
-  }, [isRunning, session, thinkingAgents]);
+  }, [isRunning, session, thinkingAgents, apiKey, haltingPrompt]);
 
   const triggerAgent = async (agent: Agent) => {
-    if (thinkingAgents.has(agent.id)) return;
+    if (thinkingAgents.has(agent.id) || !apiKey) return;
 
     setThinkingAgents(prev => new Set(prev).add(agent.id));
     
     try {
-      const response = await generateAgentResponse(agent, session.messages, session.agents, session.name);
+      const response = await generateAgentResponse(agent, session.messages, session.agents, session.name, apiKey);
       await api.addMessage(session.id, agent.id, 'model', response);
       onUpdate();
     } catch (err) {
@@ -133,6 +147,15 @@ export const DebateArena: React.FC<DebateArenaProps> = ({ session, onUpdate }) =
         {session.messages.map((msg, idx) => {
           const agent = session.agents.find(a => a.id === msg.agent_id);
           const isUser = msg.role === 'user';
+          const isModerator = msg.role === 'moderator';
+
+          if (isModerator) {
+            return (
+              <div key={idx} className="text-center my-2">
+                <p className="text-xs text-gray-500 bg-gray-200 rounded-full px-3 py-1 inline-block">{msg.content}</p>
+              </div>
+            )
+          }
           
           return (
             <div key={idx} className={clsx("flex gap-3", isUser ? "justify-end" : "justify-start")}>

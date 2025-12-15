@@ -19,14 +19,15 @@ export function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      mode TEXT
+      mode TEXT,
+      halting_prompt TEXT
     );
 
     CREATE TABLE IF NOT EXISTS session_agents (
       session_id INTEGER,
       agent_id INTEGER,
-      FOREIGN KEY(session_id) REFERENCES sessions(id),
-      FOREIGN KEY(agent_id) REFERENCES agents(id),
+      FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+      FOREIGN KEY(agent_id) REFERENCES agents(id) ON DELETE CASCADE,
       PRIMARY KEY (session_id, agent_id)
     );
 
@@ -37,8 +38,8 @@ export function initDb() {
       role TEXT,
       content TEXT,
       timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(session_id) REFERENCES sessions(id),
-      FOREIGN KEY(agent_id) REFERENCES agents(id)
+      FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+      FOREIGN KEY(agent_id) REFERENCES agents(id) ON DELETE CASCADE
     );
   `);
 }
@@ -50,8 +51,8 @@ export const createAgent = (agent: any) => {
   return stmt.run({ max_words: 100, ...agent });
 };
 export const updateAgent = (id: number, agent: any) => {
-  const stmt = db.prepare('UPDATE agents SET name = @name, context = @context, prompt = @prompt, model = @model, avatar = @avatar, color = @color, max_words = @max_words WHERE id = ?');
-  return stmt.run({ max_words: 100, ...agent, id });
+  const stmt = db.prepare('UPDATE agents SET name = @name, context = @context, prompt = @prompt, model = @model, avatar = @avatar, color = @color, max_words = @max_words WHERE id = @id');
+  return stmt.run({ ...agent, id });
 };
 export const deleteAgent = (id: number) => db.prepare('DELETE FROM agents WHERE id = ?').run(id);
 
@@ -67,8 +68,8 @@ export const getSession = (id: number) => {
   const messages = db.prepare('SELECT * FROM messages WHERE session_id = ? ORDER BY timestamp ASC').all(id);
   return { ...session, agents, messages };
 };
-export const createSession = (name: string, mode: string, agentIds: number[]) => {
-  const result = db.prepare('INSERT INTO sessions (name, mode) VALUES (?, ?)').run(name, mode);
+export const createSession = (name: string, mode: string, agentIds: number[], haltingPrompt: string) => {
+  const result = db.prepare('INSERT INTO sessions (name, mode, halting_prompt) VALUES (?, ?, ?)').run(name, mode, haltingPrompt);
   const sessionId = result.lastInsertRowid;
   const insertAgent = db.prepare('INSERT INTO session_agents (session_id, agent_id) VALUES (?, ?)');
   agentIds.forEach(agentId => insertAgent.run(sessionId, agentId));

@@ -14,6 +14,7 @@ export interface Session {
   name: string;
   mode: 'realtime' | 'synchronous';
   created_at: string;
+  halting_prompt: string;
   agents: Agent[];
   messages: Message[];
 }
@@ -22,7 +23,7 @@ export interface Message {
   id?: number;
   session_id: number;
   agent_id: number | null;
-  role: 'user' | 'model' | 'system';
+  role: 'user' | 'model' | 'system' | 'moderator';
   content: string;
   timestamp?: string;
 }

@@ -16,6 +16,7 @@ export const AgentForm: React.FC<AgentFormProps> = ({ initialData, onSubmit, onC
     model: initialData?.model || 'gemini-2.5-flash',
     avatar: initialData?.avatar || '🤖',
     color: initialData?.color || 'bg-blue-500',
+    max_words: initialData?.max_words || 100,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
