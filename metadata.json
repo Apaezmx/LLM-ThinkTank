@@ -1,0 +1,5 @@
+{
+  "name": "LLM ThinkTank",
+  "description": "A multi-agent debate platform where users can configure AI agents to discuss and debate topics in real-time or synchronously.",
+  "requestFramePermissions": []
+}
