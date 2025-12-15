@@ -1,5 +1,4 @@
 <div align="center">
-  <img alt="LLM ThinkTank Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" width="1200" height="475" />
   <h1>LLM ThinkTank</h1>
   <p><strong>Orchestrate, witness, and analyze dynamic multi-agent AI debates.</strong></p>
 
