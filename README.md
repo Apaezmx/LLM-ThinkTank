@@ -1,7 +1,6 @@
 <div align="center">
   <h1>LLM ThinkTank</h1>
   <p><strong>Orchestrate, witness, and analyze dynamic multi-agent AI debates.</strong></p>
-  <img alt="LLM-ThinkTank Demo" src="./src/demo.gif" />
   <p>
     <a href="#-core-features">Features</a> •
     <a href="#-tech-stack">Tech Stack</a> •
@@ -17,7 +16,7 @@
 This tool is perfect for researchers, developers, and hobbyists interested in exploring the emergent behaviors, conversational dynamics, and reasoning capabilities of large language models in a multi-agent setting.
 
 <div align="center">
-  <!-- TODO: Replace with an actual screenshot or GIF of the application -->
+   <img alt="LLM-ThinkTank Demo" src="./src/demo.gif" />
   <p><em>A debate in session within the Debate Arena.</em></p>
 </div>
 
