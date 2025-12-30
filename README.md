@@ -1,7 +1,7 @@
 <div align="center">
   <h1>LLM ThinkTank</h1>
   <p><strong>Orchestrate, witness, and analyze dynamic multi-agent AI debates.</strong></p>
-  ![demo](./src/demo.gif)
+  <img alt="LLM-ThinkTank Demo" href="./src/demo.gif" />
   <p>
     <a href="#-core-features">Features</a> •
     <a href="#-tech-stack">Tech Stack</a> •
@@ -18,7 +18,6 @@ This tool is perfect for researchers, developers, and hobbyists interested in ex
 
 <div align="center">
   <!-- TODO: Replace with an actual screenshot or GIF of the application -->
-  <img alt="LLM ThinkTank Application Screenshot" src="https://i.imgur.com/07xVd2E.png" />
   <p><em>A debate in session within the Debate Arena.</em></p>
 </div>
 
