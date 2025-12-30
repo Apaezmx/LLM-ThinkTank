@@ -1,7 +1,7 @@
 <div align="center">
   <h1>LLM ThinkTank</h1>
   <p><strong>Orchestrate, witness, and analyze dynamic multi-agent AI debates.</strong></p>
-
+  ![demo](https://github.com/Apaezmx/LLM-ThinkTank/blob/master/src/demo.gif)
   <p>
     <a href="#-core-features">Features</a> •
     <a href="#-tech-stack">Tech Stack</a> •
